@@ -1,0 +1,11 @@
+version: "3.4"
+
+services:
+  slack:
+    image: int128/slack-docker
+    container_name: slack
+    environment:
+      - image_regexp=^(datashaman|nginx)
+      - webhook=https://hooks.slack.com/services/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
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock

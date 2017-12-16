@@ -1,0 +1,67 @@
+version: "3.4"
+
+services:
+    web:
+        image: datashaman/wifidog-auth-flask:staging
+        container_name: auth-staging
+
+        restart: always
+
+        env_file: .env
+
+        environment:
+            - AUTH_TOKEN
+            - CSRF_SESSION_KEY
+            - FLASK_DEBUG
+            - GOOGLE_ANALYTICS_TRACKING_ID
+            - GTM_CONTAINER_ID
+            - LETSENCRYPT_HOST=${VIRTUAL_HOST}
+            - LETSENCRYPT_EMAIL
+            - MAIL_DEFAULT_SENDER_EMAIL
+            - MAIL_DEFAULT_SENDER_NAME
+            - MAIL_ERROR_SUBJECT
+            - MAIL_PORT=25
+            - MAIL_SERVER=smtp
+            - SECRET_KEY
+            - SECURITY_PASSWORD_SALT
+            - SNAPSCAN_API_KEY
+            - SNAPSCAN_SNAP_CODE
+            - TZ
+            - VIRTUAL_HOST
+            - VIRTUAL_NETWORK=nginx-proxy
+            - VIRTUAL_PORT=5000
+
+        healthcheck:
+            test: ["CMD", "/var/app/healthcheck.sh"]
+            interval: 5m
+            timeout: 10s
+            retries: 3
+
+        volumes:
+            - ./data:/var/app/data
+            - ./uploads:/var/app/auth/static/uploads
+
+        networks:
+            - proxy-tier
+
+    smtp:
+        image: lylescott/postfix-gmail-relay
+        container_name: gmail
+
+        restart: always
+
+        env_file: .env
+
+        environment:
+            - EMAIL=${GMAIL_USER}
+            - EMAILPASS=${GMAIL_PASSWORD}
+            - MY_NETWORKS="10.0.0.0/8 192.168.0.0/16 172.0.0.0/8"
+            - SYSTEM_TIMEZONE={TZ}
+
+        networks:
+            - proxy-tier
+
+networks:
+    proxy-tier:
+        external:
+            name: nginx-proxy

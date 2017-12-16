@@ -1,0 +1,15 @@
+version: "3.4"
+
+services:
+  dockerhub:
+    image: maccyber/micro-dockerhub-hook
+    container_name: micro-dockerhub-hook
+    env_file: .env
+    ports:
+      - "3000:3000"
+    volumes:
+      - /config:/config
+      - /config/micro-dockerhub-hook/scripts:/src/scripts
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Path to docker-compose files who are triggered by scripts:
+      # - /srv:/srv

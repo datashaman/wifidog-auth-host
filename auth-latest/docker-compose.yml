@@ -1,0 +1,43 @@
+version: "3.4"
+
+services:
+    web:
+        image: datashaman/wifidog-auth-flask:latest
+        container_name: auth-latest
+
+        restart: always
+
+        env_file: .env
+
+        environment:
+            - AUTH_TOKEN
+            - CSRF_SESSION_KEY
+            - FLASK_DEBUG
+            - GOOGLE_ANALYTICS_TRACKING_ID
+            - GTM_CONTAINER_ID
+            - LETSENCRYPT_HOST=${VIRTUAL_HOST}
+            - LETSENCRYPT_EMAIL
+            - SECRET_KEY
+            - SECURITY_PASSWORD_SALT
+            - TZ
+            - VIRTUAL_HOST
+            - VIRTUAL_NETWORK=nginx-proxy
+            - VIRTUAL_PORT=5000
+
+        healthcheck:
+            test: ["CMD", "/var/app/healthcheck.sh"]
+            interval: 5m
+            timeout: 10s
+            retries: 3
+
+        volumes:
+            - ./data:/var/app/data
+            - ./uploads:/var/app/auth/static/uploads
+
+        networks:
+            - proxy-tier
+
+networks:
+    proxy-tier:
+        external:
+            name: nginx-proxy

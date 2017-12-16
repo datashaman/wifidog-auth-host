@@ -1,0 +1,58 @@
+version: "3.4"
+
+services:
+    drone-server:
+        image: drone/drone:0.8
+        container_name: drone-server
+
+        volumes:
+            - ./build/:/build/
+            - ./data/:/var/lib/drone/
+
+        restart: always
+
+        env_file: .env
+
+        environment:
+            - DRONE_ADMIN
+            - DRONE_OPEN=false
+            - DRONE_HOST
+            - DRONE_GITHUB=true
+            - DRONE_GITHUB_CLIENT=${DRONE_GITHUB_CLIENT}
+            - DRONE_GITHUB_SECRET=${DRONE_GITHUB_SECRET}
+            - DRONE_SECRET=${DRONE_SECRET}
+            - GIN_MODE=release
+            - LETSENCRYPT_HOST=${VIRTUAL_HOST}
+            - LETSENCRYPT_EMAIL
+            - VIRTUAL_HOST
+            - VIRTUAL_NETWORK=nginx-proxy
+            - VIRTUAL_PORT=8000
+
+        networks:
+            - proxy-tier
+
+    drone-agent:
+        image: drone/agent:0.8
+        container_name: drone-agent
+
+        command: agent
+        restart: always
+        depends_on:
+            - drone-server
+        volumes:
+            - ./build/:/build/
+            - /var/run/docker.sock:/var/run/docker.sock
+
+        env_file: .env
+
+        environment:
+            - DRONE_SERVER=drone-server:9000
+            - DRONE_SECRET=${DRONE_SECRET}
+
+        networks:
+            - proxy-tier
+
+networks:
+    proxy-tier:
+        external:
+            name: nginx-proxy

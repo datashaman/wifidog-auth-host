@@ -1,0 +1,8 @@
+version: "3.4"
+
+services:
+    console:
+        image: quay.io/vektorlab/ctop:latest
+        container_name: ctop
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
